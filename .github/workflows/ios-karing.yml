@@ -17,18 +17,30 @@ jobs:
           channel: stable
           architecture: arm64
 
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'   # достаточно для sing-box ≥1.9 [web:148]
+
+      - name: Check Xcode CLT and env
+        run: |
+          set -eux
+          xcode-select -p
+          xcodebuild -version
+          go version
+          echo "GOBIN=${GOBIN:-not set}"
+
       - name: Build Libbox.xcframework
         run: |
           set -eux
 
-          # 1. Клонируем sing-box (актуальный main)
           git clone --depth=1 https://github.com/SagerNet/sing-box.git
           cd sing-box
 
-          # 2. Ставим зависимости и собираем libbox для iOS
+          # ставит gomobile и всё остальное
           make lib_install
 
-          # новый таргет (в современных версиях)
+          # новый таргет для iOS, при неудаче — старый
           if make lib_ios; then
             echo "lib_ios target succeeded"
           else
@@ -36,12 +48,9 @@ jobs:
             make ios
           fi
 
-          # 3. Копируем готовый Libbox.xcframework в Karing
           cd ..
           mkdir -p bind/apple
           cp -R sing-box/Libbox.xcframework bind/apple/
-
-          echo "Libbox.xcframework contents:"
           ls -R bind/apple/Libbox.xcframework
 
       - name: Flutter pub get
