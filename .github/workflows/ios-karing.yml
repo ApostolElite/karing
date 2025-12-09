@@ -113,6 +113,36 @@ jobs:
           echo "==== LibVpnCore.swift ===="
           cat bind/apple/LibVpnCore/LibVpnCore.swift
 
+      - name: Stub PacketTunnelProvider
+        run: |
+          set -eux
+          mkdir -p ios/karingService
+          cat > ios/karingService/PacketTunnelProvider.swift << 'EOF'
+          import NetworkExtension
+
+          class PacketTunnelProvider: NEPacketTunnelProvider {
+
+              override func startTunnel(
+                  options: [String : NSObject]? = nil,
+                  completionHandler: @escaping (Error?) -> Void
+              ) {
+                  // no-op stub: immediately report success
+                  completionHandler(nil)
+              }
+
+              override func stopTunnel(
+                  with reason: NEProviderStopReason,
+                  completionHandler: @escaping () -> Void
+              ) {
+                  // no-op stub
+                  completionHandler()
+              }
+          }
+          EOF
+
+          echo "==== PacketTunnelProvider.swift ===="
+          cat ios/karingService/PacketTunnelProvider.swift
+
       - name: Build unsigned iOS IPA
         run: flutter build ipa --no-codesign
 
