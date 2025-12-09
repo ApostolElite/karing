@@ -52,9 +52,24 @@ jobs:
           mkdir -p bind/apple
           cp -R sing-box/Libbox.xcframework bind/apple/
           ls -R bind/apple/Libbox.xcframework
+          
 
       - name: Flutter pub get
         run: flutter pub get
+        
+      - name: Create dummy karingWidget Info.plist
+        run: |
+          set -eux
+          mkdir -p ios/karingWidget
+          cat > ios/karingWidget/Info.plist << 'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+          </dict>
+          </plist>
+          EOF
+          ls -R ios/karingWidget        
 
       - name: Build unsigned iOS IPA
         run: flutter build ipa --no-codesign
