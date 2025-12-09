@@ -1,22 +1,48 @@
-name: Build iOS (Karing unsigned)
+name: Build iOS (Karing unsigned with Libbox)
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ main ]
 
 jobs:
   build-ios-unsigned:
     runs-on: macos-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout Karing fork
         uses: actions/checkout@v4
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: stable
+          architecture: arm64
+
+      - name: Build Libbox.xcframework
+        run: |
+          set -eux
+
+          # 1. Клонируем sing-box (актуальный main)
+          git clone --depth=1 https://github.com/SagerNet/sing-box.git
+          cd sing-box
+
+          # 2. Ставим зависимости и собираем libbox для iOS
+          make lib_install
+
+          # новый таргет (в современных версиях)
+          if make lib_ios; then
+            echo "lib_ios target succeeded"
+          else
+            echo "lib_ios target failed, trying legacy ios target"
+            make ios
+          fi
+
+          # 3. Копируем готовый Libbox.xcframework в Karing
+          cd ..
+          mkdir -p bind/apple
+          cp -R sing-box/Libbox.xcframework bind/apple/
+
+          echo "Libbox.xcframework contents:"
+          ls -R bind/apple/Libbox.xcframework
 
       - name: Flutter pub get
         run: flutter pub get
@@ -24,7 +50,7 @@ jobs:
       - name: Build unsigned iOS IPA
         run: flutter build ipa --no-codesign
 
-      - name: Upload IPA artifact
+      - name: Upload unsigned IPA
         uses: actions/upload-artifact@v4
         with:
           name: karing-ios-unsigned-ipa
