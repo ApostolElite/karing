@@ -74,23 +74,44 @@ jobs:
       - name: Stub missing LibVpnCore sources
         run: |
           set -eux
+          rm -rf bind/apple/LibVpnCore
           mkdir -p bind/apple/LibVpnCore
+
           cat > bind/apple/LibVpnCore/ExtensionPlatformInterface.swift << 'EOF'
           import NetworkExtension
-          protocol ExtensionPlatformInterface {}
+
+          protocol ExtensionPlatformInterface {
+          }
           EOF
+
           cat > bind/apple/LibVpnCore/Extension+RunBlocking.swift << 'EOF'
           import NetworkExtension
-          extension NEPacketTunnelProvider { func runBlocking() {} }
+
+          extension NEPacketTunnelProvider {
+              func runBlocking() {
+                  // no-op stub
+              }
+          }
           EOF
+
           cat > bind/apple/LibVpnCore/ExtensionProvider.swift << 'EOF'
           import NetworkExtension
-          class ExtensionProvider: NEPacketTunnelProvider {}
+
+          class ExtensionProvider: NEPacketTunnelProvider {
+          }
           EOF
+
           cat > bind/apple/LibVpnCore/LibVpnCore.swift << 'EOF'
           import Foundation
-          public class LibVpnCore {}
-          EOF  
+
+          public class LibVpnCore {
+              public init() {
+              }
+          }
+          EOF
+
+          echo "==== LibVpnCore.swift ===="
+          cat bind/apple/LibVpnCore/LibVpnCore.swift
 
       - name: Build unsigned iOS IPA
         run: flutter build ipa --no-codesign
