@@ -69,7 +69,28 @@ jobs:
           </dict>
           </plist>
           EOF
-          ls -R ios/karingWidget        
+          ls -R ios/karingWidget    
+          
+      - name: Stub missing LibVpnCore sources
+        run: |
+          set -eux
+          mkdir -p bind/apple/LibVpnCore
+          cat > bind/apple/LibVpnCore/ExtensionPlatformInterface.swift << 'EOF'
+          import NetworkExtension
+          protocol ExtensionPlatformInterface {}
+          EOF
+          cat > bind/apple/LibVpnCore/Extension+RunBlocking.swift << 'EOF'
+          import NetworkExtension
+          extension NEPacketTunnelProvider { func runBlocking() {} }
+          EOF
+          cat > bind/apple/LibVpnCore/ExtensionProvider.swift << 'EOF'
+          import NetworkExtension
+          class ExtensionProvider: NEPacketTunnelProvider {}
+          EOF
+          cat > bind/apple/LibVpnCore/LibVpnCore.swift << 'EOF'
+          import Foundation
+          public class LibVpnCore {}
+          EOF  
 
       - name: Build unsigned iOS IPA
         run: flutter build ipa --no-codesign
