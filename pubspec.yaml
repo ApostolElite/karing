@@ -161,11 +161,6 @@ dependencies:
       url: https://github.com/KaringX/window_manager.git
       ref: bf21977eaa4e6035b1d81e249f91525a74f86ffd
       path: packages/window_manager
-  vpn_service:
-    path: ../vpn-service/
-    #git:
-      #url: https://github.com/KaringX/vpn-service.git
-      #ref: main
 
 dev_dependencies:
   sentry_dart_plugin: 3.2.0
